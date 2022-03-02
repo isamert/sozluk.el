@@ -100,7 +100,8 @@
       "** %s\n%s\n\n"
       (alist-get 'kelime it)
       (sozluk--orgify-html (alist-get 'koken it)))))
-  (org-mode))
+  (org-mode)
+  (goto-char (point-min)))
 
 ;;;###autoload
 (defun sozluk (input)
@@ -140,7 +141,8 @@ a nicely formatted org buffer."
                               (split-string .birlesikler ", "))
                              ", ")))))
         (insert "\n"))))
-  (org-mode))
+  (org-mode)
+  (goto-char (point-min)))
 
 (provide 'sozluk)
 ;;; sozluk.el ends here
