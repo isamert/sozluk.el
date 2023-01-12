@@ -59,7 +59,7 @@
        (buffer-substring-no-properties (region-beginning) (region-end))
      (thing-at-point 'word t))))
 
-(defun sozluk--orgify-html (input)
+(defun sozluk--orgify-etymology-html (input)
   (string-trim
    (replace-regexp-in-string
     "\\(?:\\|</\\w+>\\)" ""
@@ -79,7 +79,7 @@
           ((string-prefix-p "<a " orgified)
            (save-match-data
              (string-match "\"/kelime/\\(\\w+\\)\"" orgified)
-             (format "[[elisp:(sozluk \"%s\")][%s]]"
+             (format "[[elisp:(sozluk-etymology \"%s\")][%s]]"
                      (match-string 1 orgified)
                      (match-string 1 orgified))))
           ((and
@@ -99,7 +99,7 @@
      (format
       "** %s\n%s\n\n"
       (alist-get 'kelime it)
-      (sozluk--orgify-html (alist-get 'koken it)))))
+      (sozluk--orgify-etymology-html (alist-get 'koken it)))))
   (org-mode)
   (goto-char (point-min)))
 
