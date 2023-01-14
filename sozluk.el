@@ -108,7 +108,7 @@
   "Fetch the meaining of INPUT from sozluk.gov.tr and display it in
 a nicely formatted org buffer."
   (interactive (list (sozluk--region-or-word)))
-  (let ((result (sozluk--request "http://sozluk.gov.tr/gts" `(("ara" ,input)))))
+  (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
     (when (alist-get 'error result)
       (user-error "Böyle bir kelime yok :("))
     (sozluk--switch-to-buffer-for input)
