@@ -30,6 +30,7 @@
 (require 'dash)
 (require 'url)
 (require 'org)
+(require 'turkish nil t)
 (eval-when-compile (require 'subr-x))
 
 (defgroup sozluk nil
@@ -48,6 +49,13 @@
 
 (defcustom sozluk-include-etymology-on-sozluk nil
   "Whether to append etymology results in `sozluk' calls."
+  :type 'boolean
+  :group 'sozluk)
+
+(defcustom sozluk-deasciify-if-not-found nil
+  "When a word is not found, de-asciify the word and try again.
+This requires `turkish' package to be installed. See
+https://github.com/emres/turkish-mode"
   :type 'boolean
   :group 'sozluk)
 
@@ -134,42 +142,53 @@
   "Fetch the meaining of INPUT from sozluk.gov.tr and display it in
 a nicely formatted org buffer."
   (interactive (list (sozluk--region-or-word)))
-  (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
-    (when (alist-get 'error result)
-      (user-error "Böyle bir kelime yok :("))
-    (with-current-buffer (sozluk--switch-to-buffer-for input)
-      (-each-indexed result
-        (lambda (madde-index madde)
-          (let-alist madde
-            (insert (format "* %s (%s)\n" .madde (string-join (-repeat (1+ madde-index) "I"))))
-            (--each-indexed .anlamlarListe
-              (insert
-               (format
-                "%s. %s%s\n"
-                (1+ it-index)
-                (if-let* ((specs (string-join
-                                  (--map (format "/%s/" (alist-get 'tam_adi it)) (alist-get 'ozelliklerListe it))
-                                  ", "))
-                          (_ (not (sozluk--string-blank? specs))))
-                    (concat specs ". ") "")
-                (alist-get 'anlam it)))
-              (--each (alist-get 'orneklerListe it)
-                (let-alist it
-                  (insert
-                   (format
-                    " : %s - *%s*\n" .ornek
-                    (alist-get 'tam_adi (--find (string= (alist-get 'yazar_id it) .yazar_id) .yazar)))))))
-            (unless (sozluk--string-blank? .birlesikler)
-              (insert (format "\nBirleşikler: %s\n"
-                              (string-join
-                               (--map
-                                (format "[[elisp:(sozluk \"%s\")][%s]]" it it)
-                                (split-string .birlesikler ", "))
-                               ", ")))))
-          (insert "\n")))
-      (when sozluk-include-etymology-on-sozluk
-        (sozluk-etymology input t))
-      (sozluk--finalize-buffer))))
+  (catch 'return
+    (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
+      (when (alist-get 'error result)
+        (if-let* ((_ sozluk-deasciify-if-not-found)
+                  (deascified-input (with-temp-buffer
+                                      (insert input)
+                                      (turkish-correct-buffer)
+                                      (string-trim (buffer-string))))
+                  (different? (not (string-equal deascified-input input))))
+            (progn
+              (message "Böyle bir kelime yok, '%s' olarak arıyorum..." deascified-input)
+              (sozluk deascified-input)
+              (throw 'return nil))
+          (user-error "Böyle bir kelime yok :(")))
+      (with-current-buffer (sozluk--switch-to-buffer-for input)
+        (-each-indexed result
+          (lambda (madde-index madde)
+            (let-alist madde
+              (insert (format "* %s (%s)\n" .madde (string-join (-repeat (1+ madde-index) "I"))))
+              (--each-indexed .anlamlarListe
+                (insert
+                 (format
+                  "%s. %s%s\n"
+                  (1+ it-index)
+                  (if-let* ((specs (string-join
+                                    (--map (format "/%s/" (alist-get 'tam_adi it)) (alist-get 'ozelliklerListe it))
+                                    ", "))
+                            (_ (not (sozluk--string-blank? specs))))
+                      (concat specs ". ") "")
+                  (alist-get 'anlam it)))
+                (--each (alist-get 'orneklerListe it)
+                  (let-alist it
+                    (insert
+                     (format
+                      " : %s - *%s*\n" .ornek
+                      (alist-get 'tam_adi (--find (string= (alist-get 'yazar_id it) .yazar_id) .yazar)))))))
+              (unless (sozluk--string-blank? .birlesikler)
+                (insert (format "\nBirleşikler: %s\n"
+                                (string-join
+                                 (--map
+                                  (format "[[elisp:(sozluk \"%s\")][%s]]" it it)
+                                  (split-string .birlesikler ", "))
+                                 ", ")))))
+            (insert "\n")))
+        (when sozluk-include-etymology-on-sozluk
+          (sozluk-etymology input t))
+        (sozluk--finalize-buffer)))))
 
 (provide 'sozluk)
 ;;; sozluk.el ends here
