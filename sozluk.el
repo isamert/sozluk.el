@@ -1,9 +1,9 @@
 ;;; sozluk.el --- An online Turkish dictonary  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022  Isa Mert Gurbuz
+;; Copyright (C) 2023  Isa Mert Gurbuz
 
 ;; Author: Isa Mert Gurbuz <isamertgurbuz@gmail.com>
-;; Version: 0.1
+;; Version: 0.5
 ;; Homepage: https://github.com/isamert/sozluk.el
 ;; License: GPL-3.0-or-later
 ;; Package-Requires: ((emacs "27.1") (dash "2.11.0"))
