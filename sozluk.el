@@ -6,7 +6,7 @@
 ;; Version: 0.1
 ;; Homepage: https://github.com/isamert/sozluk.el
 ;; License: GPL-3.0-or-later
-;; Package-Requires: ((emacs "25.1") (dash "2.11.0"))
+;; Package-Requires: ((emacs "27.1") (dash "2.11.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
