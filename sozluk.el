@@ -187,7 +187,8 @@ a nicely formatted org buffer."
                                  ", ")))))
             (insert "\n")))
         (when sozluk-include-etymology-on-sozluk
-          (sozluk-etymology input t))
+          (ignore-errors
+            (sozluk-etymology input t)))
         (sozluk--finalize-buffer)))))
 
 (provide 'sozluk)
