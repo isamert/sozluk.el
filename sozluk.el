@@ -145,7 +145,7 @@ a nicely formatted org buffer."
   (catch 'return
     (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
       (when (alist-get 'error result)
-        (if-let* ((_ sozluk-deasciify-if-not-found)
+        (if-let* ((sozluk-deasciify-if-not-found)
                   (deascified-input (with-temp-buffer
                                       (insert input)
                                       (turkish-correct-buffer)
@@ -169,7 +169,7 @@ a nicely formatted org buffer."
                   (if-let* ((specs (string-join
                                     (--map (format "/%s/" (alist-get 'tam_adi it)) (alist-get 'ozelliklerListe it))
                                     ", "))
-                            (_ (not (sozluk--string-blank? specs))))
+                            ((not (sozluk--string-blank? specs))))
                       (concat specs ". ") "")
                   (alist-get 'anlam it)))
                 (--each (alist-get 'orneklerListe it)
