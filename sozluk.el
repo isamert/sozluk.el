@@ -1,4 +1,4 @@
-;;; sozluk.el --- An online Turkish dictonary  -*- lexical-binding: t; -*-
+;;; sozluk.el --- An online Turkish dictionary  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  Isa Mert Gurbuz
 
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; An online Turkish dictonary
+;; An online Turkish dictionary
 
 ;;; Code:
 
@@ -34,8 +34,8 @@
 (eval-when-compile (require 'subr-x))
 
 (defgroup sozluk nil
-  "An online Turkish dictonary"
-  :group 'dictonary)
+  "An online Turkish dictionary."
+  :group 'dictionary)
 
 (defcustom sozluk-switch-to-buffer-fn #'switch-to-buffer-other-window
   "Which function to use while opening the result buffer."
@@ -54,7 +54,7 @@
 
 (defcustom sozluk-deasciify-if-not-found nil
   "When a word is not found, de-asciify the word and try again.
-This requires `turkish' package to be installed. See
+This requires `turkish' package to be installed.  See
 https://github.com/emres/turkish-mode"
   :type 'boolean
   :group 'sozluk)
@@ -124,6 +124,9 @@ https://github.com/emres/turkish-mode"
 
 ;;;###autoload
 (defun sozluk-etymology (input &optional use-current-buffer)
+  "Fetch the etymology of INPUT from api.etimolojiturkce.com and display it.
+If USE-CURRENT-BUFFER is non-nil then insert the meaning to the
+current buffer."
   (interactive (list (sozluk--region-or-word)))
   (with-current-buffer (if use-current-buffer
                            (current-buffer)
@@ -139,8 +142,7 @@ https://github.com/emres/turkish-mode"
 
 ;;;###autoload
 (defun sozluk (input)
-  "Fetch the meaining of INPUT from sozluk.gov.tr and display it in
-a nicely formatted org buffer."
+  "Fetch the meaning of INPUT from sozluk.gov.tr and display it."
   (interactive (list (sozluk--region-or-word)))
   (catch 'return
     (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
