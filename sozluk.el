@@ -128,17 +128,16 @@ https://github.com/emres/turkish-mode"
 If USE-CURRENT-BUFFER is non-nil then insert the meaning to the
 current buffer."
   (interactive (list (sozluk--region-or-word)))
-  (with-current-buffer (if use-current-buffer
-                           (current-buffer)
-                         (sozluk--switch-to-buffer-for input))
-    (insert "* Etimoloji\n")
-    (--each (sozluk--request (format "https://api.etimolojiturkce.com/searchdetailed/%s" input))
-      (insert
-       (format
-        "** %s\n%s\n\n"
-        (alist-get 'kelime it)
-        (sozluk--orgify-etymology-html (alist-get 'koken it)))))
-    (sozluk--finalize-buffer)))
+  (unless use-current-buffer
+    (sozluk--switch-to-buffer-for input))
+  (insert "* Etimoloji\n")
+  (--each (sozluk--request (format "https://api.etimolojiturkce.com/searchdetailed/%s" input))
+    (insert
+     (format
+      "** %s\n%s\n\n"
+      (alist-get 'kelime it)
+      (sozluk--orgify-etymology-html (alist-get 'koken it)))))
+  (sozluk--finalize-buffer))
 
 ;;;###autoload
 (defun sozluk (input)
@@ -158,40 +157,41 @@ current buffer."
               (sozluk deascified-input)
               (throw 'return nil))
           (user-error "Böyle bir kelime yok :(")))
-      (with-current-buffer (sozluk--switch-to-buffer-for input)
-        (-each-indexed result
-          (lambda (madde-index madde)
-            (let-alist madde
-              (insert (format "* %s (%s)\n" .madde (string-join (-repeat (1+ madde-index) "I"))))
-              (--each-indexed .anlamlarListe
-                (insert
-                 (format
-                  "%s. %s%s\n"
-                  (1+ it-index)
-                  (if-let* ((specs (string-join
-                                    (--map (format "/%s/" (alist-get 'tam_adi it)) (alist-get 'ozelliklerListe it))
-                                    ", "))
-                            ((not (sozluk--string-blank? specs))))
-                      (concat specs ". ") "")
-                  (alist-get 'anlam it)))
-                (--each (alist-get 'orneklerListe it)
-                  (let-alist it
-                    (insert
-                     (format
-                      " : %s - *%s*\n" .ornek
-                      (alist-get 'tam_adi (--find (string= (alist-get 'yazar_id it) .yazar_id) .yazar)))))))
-              (unless (sozluk--string-blank? .birlesikler)
-                (insert (format "\nBirleşikler: %s\n"
-                                (string-join
-                                 (--map
-                                  (format "[[elisp:(sozluk \"%s\")][%s]]" it it)
-                                  (split-string .birlesikler ", "))
-                                 ", ")))))
-            (insert "\n")))
-        (when sozluk-include-etymology-on-sozluk
-          (ignore-errors
-            (sozluk-etymology input t)))
-        (sozluk--finalize-buffer)))))
+
+      (sozluk--switch-to-buffer-for input)
+      (-each-indexed result
+        (lambda (madde-index madde)
+          (let-alist madde
+            (insert (format "* %s (%s)\n" .madde (string-join (-repeat (1+ madde-index) "I"))))
+            (--each-indexed .anlamlarListe
+              (insert
+               (format
+                "%s. %s%s\n"
+                (1+ it-index)
+                (if-let* ((specs (string-join
+                                  (--map (format "/%s/" (alist-get 'tam_adi it)) (alist-get 'ozelliklerListe it))
+                                  ", "))
+                          ((not (sozluk--string-blank? specs))))
+                    (concat specs ". ") "")
+                (alist-get 'anlam it)))
+              (--each (alist-get 'orneklerListe it)
+                (let-alist it
+                  (insert
+                   (format
+                    " : %s - *%s*\n" .ornek
+                    (alist-get 'tam_adi (--find (string= (alist-get 'yazar_id it) .yazar_id) .yazar)))))))
+            (unless (sozluk--string-blank? .birlesikler)
+              (insert (format "\nBirleşikler: %s\n"
+                              (string-join
+                               (--map
+                                (format "[[elisp:(sozluk \"%s\")][%s]]" it it)
+                                (split-string .birlesikler ", "))
+                               ", ")))))
+          (insert "\n")))
+      (when sozluk-include-etymology-on-sozluk
+        (ignore-errors
+          (sozluk-etymology input t)))
+      (sozluk--finalize-buffer))))
 
 (provide 'sozluk)
 ;;; sozluk.el ends here
