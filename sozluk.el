@@ -109,7 +109,7 @@ and links are converted."
                  ("<i>" . "/")
                  ("</i>" . "/")))
               (orgified (replace-regexp-in-string
-                         (regexp-opt (mapcar 'car replacements))
+                         (regexp-opt (mapcar #'car replacements))
                          (lambda (it) (alist-get it replacements nil nil #'string-equal))
                          substr t t)))
          (cond
