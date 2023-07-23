@@ -3,7 +3,7 @@
 ;; Copyright (C) 2023  Isa Mert Gurbuz
 
 ;; Author: Isa Mert Gurbuz <isamertgurbuz@gmail.com>
-;; Version: 0.5
+;; Version: 1.0.0
 ;; Homepage: https://github.com/isamert/sozluk.el
 ;; License: GPL-3.0-or-later
 ;; Package-Requires: ((emacs "27.1") (dash "2.11.0"))
@@ -23,7 +23,8 @@
 
 ;;; Commentary:
 
-;; An online Turkish dictionary
+;; An online Turkish dictionary.  Uses sozluk.gov.tr and
+;; etimolojiturkce.com.
 
 ;;; Code:
 
@@ -60,15 +61,21 @@ https://github.com/emres/turkish-mode"
   :group 'sozluk)
 
 (defun sozluk--string-blank? (s)
+  "Check if S is nil or blank."
   (or (null s) (string= "" s)))
 
 (defun sozluk--request (url &optional url-params)
+  "Do a request for URL, optionally pass URL-PARAMS.
+URL-PARAMS should be an alist in the form of
+`url-build-query-string' requires."
   (with-temp-buffer
     (let ((qstr (url-build-query-string url-params)))
       (url-insert-file-contents (format "%s%s%s" url (if (sozluk--string-blank? qstr) "" "?") qstr))
       (json-parse-buffer :object-type 'alist :array-type #'list :null-object nil))))
 
 (defun sozluk--switch-to-buffer-for (input)
+  "Create and switch to buffer for INPUT.
+For switching, `sozluk-switch-to-buffer-fn' is used."
   (let ((buffer (get-buffer-create (format "*sozluk: %s*" input))))
     (funcall sozluk-switch-to-buffer-fn buffer)
     (with-current-buffer buffer
@@ -76,6 +83,9 @@ https://github.com/emres/turkish-mode"
     buffer))
 
 (defun sozluk--region-or-word ()
+  "Request a word from user.
+If there is an active region, it will be used as the initial
+input."
   (read-string
    "Kelime: "
    (if (use-region-p)
@@ -83,6 +93,10 @@ https://github.com/emres/turkish-mode"
      (thing-at-point 'word t))))
 
 (defun sozluk--orgify-etymology-html (input)
+  "Convert given html INPUT into `org-mode' format.
+This is not a full-fledged HTML to `org-mode' converter, just
+converts what it's needed for this package.  Mostly basic markup
+and links are converted."
   (string-trim
    (replace-regexp-in-string
     "\\(?:\\|</\\w+>\\)" ""
@@ -113,6 +127,7 @@ https://github.com/emres/turkish-mode"
      input))))
 
 (defun sozluk--finalize-buffer ()
+  "Tidy up the result buffer."
   (org-mode)
   (when sozluk-fill-paragraph
     (goto-char (point-min))
