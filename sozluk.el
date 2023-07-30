@@ -31,7 +31,6 @@
 (require 'dash)
 (require 'url)
 (require 'org)
-(require 'turkish nil t)
 (eval-when-compile (require 'subr-x))
 
 (defgroup sozluk nil
@@ -154,6 +153,7 @@ current buffer."
       (sozluk--orgify-etymology-html (alist-get 'koken it)))))
   (sozluk--finalize-buffer))
 
+(declare-function turkish-correct-buffer "turkish")
 ;;;###autoload
 (defun sozluk (input)
   "Fetch the meaning of INPUT from sozluk.gov.tr and display it."
@@ -162,10 +162,12 @@ current buffer."
     (let ((result (sozluk--request "https://sozluk.gov.tr/gts" `(("ara" ,input)))))
       (when (alist-get 'error result)
         (if-let* ((sozluk-deasciify-if-not-found)
-                  (deascified-input (with-temp-buffer
-                                      (insert input)
-                                      (turkish-correct-buffer)
-                                      (string-trim (buffer-string))))
+                  (deascified-input (if (require 'turkish nil t)
+                                        (with-temp-buffer
+                                          (insert input)
+                                          (turkish-correct-buffer)
+                                          (string-trim (buffer-string)))
+                                      (user-error "Bu özellik için turkish paketini kurmanız gerekiyor.  `sozluk-deasciify-if-not-found' değişkeninin dokümantasyonuna bakın")))
                   (different? (not (string-equal deascified-input input))))
             (progn
               (message "Böyle bir kelime yok, '%s' olarak arıyorum..." deascified-input)
