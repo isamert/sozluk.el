@@ -3,25 +3,20 @@ An online Turkish dictionary that uses `sozluk.tdk.gov.tr` and `etimolojiturkce.
 
 ## Installation
 
-You can install sozluk.el using `quelpa`:
+sozluk is available through [MELPA](https://melpa.org/#/sozluk). If you have it set up already, just do `M-x package-install sozluk` and you are good to go. Otherwise please see [MELPA getting started](https://melpa.org/#/getting-started) page to learn how you can install packages through MELPA or see the following installation options.
+
+Another way to install `sozluk.el` would be using either [straight](https://github.com/radian-software/straight.el) or [quelpa](https://github.com/quelpa/quelpa-use-package) package managers:
 
 ```elisp
 (use-package sozluk
-  :ensure t
-  :quelpa (sozluk
-           :fetcher github
-           :repo "isamert/sozluk.el"))
+  :quelpa (sozluk :fetcher github :repo "isamert/sozluk.el"))
 ```
 
 Alternatively, you can use the straight package manager:
 
 ```elisp
 (use-package sozluk
-  :ensure t
-  :straight (sozluk
-	         :type git
-	         :host github
-	         :repo "isamert/sozluk.el"))
+  :straight (sozluk :type git :host github :repo "isamert/sozluk.el"))
 ```
 
 Another option is just downloading sozluk.el file and putting into your load-path, afterwards you can simply do the following in your init.el:
